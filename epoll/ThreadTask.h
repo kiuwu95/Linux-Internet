@@ -39,6 +39,7 @@ void ClientAccept(const int& sfd, const int& epfd) {
         ev.events = EPOLLIN | EPOLLET;
 
         char ip[32];
+        bzero(&ip, sizeof(ip));
         printf("Client has connected, IP: %s, 端口: %d\n",
             inet_ntop(AF_INET, &caddr.sin_addr, ip, sizeof(ip)),
             ntohs(caddr.sin_port)
@@ -53,6 +54,7 @@ void ClientAccept(const int& sfd, const int& epfd) {
 
 void SendMsg(const int& cfd, const int& epfd) {
     char buf[16], msg[1024];
+    bzero(&buf, sizeof(buf));
     bzero(&msg, sizeof(msg));
     while (1) {
         int len = recv(cfd, buf, sizeof(buf), 0);

@@ -6,9 +6,9 @@
 #include"ThreadPool.h"
 #include"ThreadTask.h"
 
-#define MAX_SIZE 1024
+#define EVENTS_MAX_SIZE 1024
 
-ThreadPool pool(MAX_SIZE);
+ThreadPool pool(4);
 
 int main() {
     int sfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -42,7 +42,7 @@ int main() {
         return -1;
     }
 
-    struct epoll_event ev, events[MAX_SIZE];
+    struct epoll_event ev, events[EVENTS_MAX_SIZE];
     bzero(&ev, sizeof(ev));
     bzero(&events, sizeof(events));
     ev.data.fd = sfd;
@@ -56,7 +56,7 @@ int main() {
     }
 
     while (1) {
-        int num = epoll_wait(epfd, events, MAX_SIZE, -1);
+        int num = epoll_wait(epfd, events, EVENTS_MAX_SIZE, -1);
         for (int i = 0;i < num;i++) {
             if (events[i].data.fd == sfd) {
                 ClientAccept(sfd, epfd);
