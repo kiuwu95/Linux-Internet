@@ -49,7 +49,7 @@ int main() {
             perror("accept");
             delete ptr;
             ptr = nullptr;
-            break;
+            continue;
         }
 
         pool.AddTask(working, ptr);
