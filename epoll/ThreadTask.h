@@ -33,7 +33,7 @@ void ClientAccept(const int& sfd, const int& epfd) {
         if (SetNonblocking(cfd) == -1) {
             perror("SetNonblocking");
             close(cfd);
-            return;
+            continue;
         }
         ev.data.fd = cfd;
         ev.events = EPOLLIN | EPOLLET;
