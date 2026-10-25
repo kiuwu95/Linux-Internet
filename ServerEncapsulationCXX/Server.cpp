@@ -125,7 +125,7 @@ int EpollServer::SendMsg(const int& cfd, const std::string& msg) {
     memcpy(data, &Msg_size, 4);
     memcpy(data + 4, msg.data(), msg.size());
 
-    int ret = writen(cfd, data, msg.size() + 4) == -1;
+    int ret = writen(cfd, data, msg.size() + 4);
     delete[] data;
     return ret;
 }
