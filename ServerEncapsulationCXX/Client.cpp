@@ -1,7 +1,6 @@
 ﻿#include"Client.h"
 
-Client::Client() {
-    cfd = socket(AF_INET, SOCK_STREAM, 0);
+Client::Client() :cfd(socket(AF_INET, SOCK_STREAM, 0)), count(0), end(0) {
     if (cfd == -1) {
         perror("socket");
     }
@@ -10,6 +9,10 @@ Client::~Client() {
     if (cfd > 0) {
         close(cfd);
     }
+
+    end = 1;
+    MonitorServer.join();
+    RecvThread.join();
 }
 int Client::ConnectServer(const char IP[], const unsigned short& port) {
     sockaddr_in saddr;
@@ -23,32 +26,60 @@ int Client::ConnectServer(const char IP[], const unsigned short& port) {
         return -1;
     }
 
+    MonitorServerConnection();
+
+    printf("We have connected to the server successfully!\n");
+
     return 0;
 }
-int Client::SendMsg(const std::string& msg) {
-    char* data = new char[msg.size() + 4];
-    int Msg_size = htonl(msg.size());
-    memcpy(data, &Msg_size, 4);
-    memcpy(data + 4, msg.data(), msg.size());
+int Client::SendMsg(const std::string& msg, const MsgType& type) {
+    char* data = new char[msg.size() + 8];
+    int Msg_size = htonl(msg.size()), msgtype = htonl((int)type);
 
-    int ret = writen(data, msg.size() + 4) == -1;
+    memcpy(data, &Msg_size, 4);
+    memcpy(data + 4, &msgtype, 4);
+    memcpy(data + 8, msg.data(), msg.size());
+
+    int ret = writen(data, msg.size() + 8);
     delete[] data;
     return ret;
 }
 std::string Client::RecvMsg() {
     int Msg_size = 0;
-    readn((char*)&Msg_size, 4);
-    Msg_size = ntohl(Msg_size);
-
-    char* data = new char[Msg_size + 1];
-    if (readn(data, Msg_size) < Msg_size) {
-        return std::string();
+    int nread = readn((char*)&Msg_size, 4);
+    if (nread < 4) {
+        if (nread == 0) {
+            return "EOF";
+        }
+        else {
+            return "ERROR";
+        }
     }
 
-    data[Msg_size] = '\0';
-    std::string ret = std::string(data);
-    delete[] data;
-    return ret;
+    int type = -1;
+    readn((char*)&type, 4);
+    type = ntohl(type);
+
+    if (type == (int)MsgType::MSG_) {
+        Msg_size = ntohl(Msg_size);
+        char* data = new char[Msg_size + 1];
+        if (readn(data, Msg_size) < Msg_size) {
+            delete[] data;
+            return "ERROR";
+        }
+
+        data[Msg_size] = '\0';
+        std::string ret = std::string(data, Msg_size);
+        delete[] data;
+        return ret;
+    }
+    else if (type == (int)MsgType::HEART_) {
+        count = 0;
+        return "HEART_";
+    }
+    else {
+        return "ERROR";
+    }
 }
 
 int Client::writen(const char* msg, const int& size) {
@@ -76,10 +107,55 @@ int Client::readn(char* buf, const int& size) {
             left -= nread;
             p += nread;
         }
+        else if (nread == 0) {
+            return 0;
+        }
         else if (nread == -1) {
             return -1;
         }
     }
 
     return size;
+}
+
+void Client::MonitorServerConnection() {
+    MonitorServer = std::thread([this] {
+        while (!end) {
+            count++;
+            if (count > 5) {
+                printf("Server has disconnected...\n");
+                close(cfd);
+                end = 1;
+                break;
+            }
+
+
+            {
+                std::unique_lock<std::mutex> lock(write_mtx);
+                SendMsg("", MsgType::HEART_);
+            }
+
+            std::this_thread::sleep_for(std::chrono::seconds(10));
+        }
+        });
+    RecvThread = std::thread([this] {
+        while (!end) {
+            std::string Msg = RecvMsg();
+            if (Msg == "ERROR") {
+                perror("RecvMsg");
+            }
+            else if (Msg == "EOF") {
+                printf("Server has disconnected...\n");
+                close(cfd);
+                end = 1;
+                break;
+            }
+            else if (Msg == "HEART_") {
+                continue;
+            }
+            else {
+                printf("Server says: %s\n", Msg.c_str());
+            }
+        }
+        });
 }

@@ -1,6 +1,8 @@
 ﻿#include"Server.h"
+#include<signal.h>
 EpollServer ES;
 int main() {
+    signal(SIGPIPE, SIG_IGN);
     if (ES.ServerBind(9999) == -1) {
         perror("ServerBind");
         return -1;
