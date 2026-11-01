@@ -2,7 +2,7 @@
 #include"EventLoop.h"
 #include"Channel.h"
 
-Acceptor::Acceptor(EventLoop* loop, const uint16_t& port) :main_loop(loop) {
+Acceptor::Acceptor(EventLoop* loop, const uint16_t& port, const char IP[]) :main_loop(loop) {
     int lfd = socket(AF_INET, SOCK_STREAM, 0);
     if (lfd == -1) {
         perror("socket");
@@ -11,7 +11,7 @@ Acceptor::Acceptor(EventLoop* loop, const uint16_t& port) :main_loop(loop) {
     sockaddr_in saddr;
     saddr.sin_port = htons(port);
     saddr.sin_family = AF_INET;
-    inet_pton(AF_INET, "127.0.0.1", &saddr.sin_addr.s_addr);
+    inet_pton(AF_INET, IP, &saddr.sin_addr.s_addr);
     if (bind(lfd, (sockaddr*)&saddr, sizeof(saddr)) == -1) {
         perror("bind");
         return;

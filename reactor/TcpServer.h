@@ -1,10 +1,7 @@
 ﻿#pragma once
 #include<thread>
-#include<iostream>
-#include<vector>
 
 class Acceptor;
-class Channel;
 class EventLoop;
 
 class TcpServer {
@@ -12,13 +9,12 @@ public:
     TcpServer(const TcpServer&) = delete;
     TcpServer& operator=(const TcpServer&) = delete;
 
-    TcpServer(const uint16_t& port, const size_t& loops_num);
+    TcpServer(const size_t& loops_num, const uint16_t& port = 9999, const char IP[] = "127.0.0.1");
     ~TcpServer();
 
     void start();
 private:
     void AcceptorConnectionCallBack(int fd);
-
 private:
     std::unique_ptr<EventLoop>main_loop;
     std::unique_ptr<Acceptor>acceptor_;

@@ -13,7 +13,7 @@ public:
     Acceptor(const Acceptor&) = delete;
     Acceptor& operator=(const Acceptor&) = delete;
 
-    Acceptor(EventLoop* loop, const uint16_t& port);
+    Acceptor(EventLoop* loop, const uint16_t& port, const char IP[]);
 
     void SetConnectionCallBack(std::function<void(int)>cb);
 private:

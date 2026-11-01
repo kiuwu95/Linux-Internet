@@ -1,6 +1,6 @@
 ﻿#include"TcpServer.h"
 
-static TcpServer Reactor(9999, 6);
+static TcpServer Reactor(10);
 
 int main() {
     Reactor.start();

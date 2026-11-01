@@ -1,5 +1,6 @@
 ﻿#include"EventLoop.h"
 #include"Channel.h"
+#include"Connection.h"
 
 EventLoop::EventLoop() :epfd_(epoll_create1(0)), end_(false) {
     if (epfd_ == -1) {
@@ -17,6 +18,8 @@ void EventLoop::UpdateChannel(Channel* Ch) {
     }
 }
 void EventLoop::AddChannel(std::unique_ptr<Channel> Ch_ptr) {
+    std::unique_ptr<Connection> conn_ = std::make_unique<Connection>(Ch_ptr.get());
+    Connections_.emplace(Ch_ptr->fd(), std::move(conn_));
     Channels_.emplace(Ch_ptr->fd(), std::move(Ch_ptr));
 }
 void EventLoop::RemoveChannel(Channel* Ch) {
@@ -25,6 +28,7 @@ void EventLoop::RemoveChannel(Channel* Ch) {
     }
     close(Ch->fd());
 
+    Connections_.erase(Ch->fd());
     Channels_.erase(Ch->fd());
 }
 void EventLoop::RunInLoop(std::function<void()>f) { f(); }

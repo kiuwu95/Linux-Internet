@@ -3,13 +3,13 @@
 #include<arpa/inet.h>
 #include<unistd.h>
 #include<stdio.h>
-#include<vector>
 #include<memory>
 #include<atomic>
 #include<functional>
 #include<unordered_map>
 
 class Channel;
+class Connection;
 
 class EventLoop {
 public:
@@ -29,4 +29,6 @@ private:
     int epfd_;
     std::atomic<bool> end_;
     std::unordered_map<int, std::unique_ptr<Channel>> Channels_;
+public:
+    std::unordered_map<int, std::unique_ptr<Connection>> Connections_;
 };

@@ -9,12 +9,14 @@ class EventLoop;
 class Channel {
 public:
     Channel(const int& fd, EventLoop* loop);
-    void RemoveChannel();
+    ~Channel() = default;
 
     int fd() const;
     uint32_t events() const;
+    EventLoop* loop() const;
 
     void UpdateRevent(const uint32_t& UR);
+    void RemoveChannel();
     void EnableReading();
     void HandleEvent();
 

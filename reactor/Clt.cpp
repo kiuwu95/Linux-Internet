@@ -1,11 +1,15 @@
 ﻿#include"Client.h"
 
-static Client cli;
+static Client clt;
 
 int main() {
-    if (!cli.ConnectServer("127.0.0.1", 9999)) {
+    if (!clt.ConnectServer()) {
         perror("ConnectServer");
         return -1;
     }
-    cli.SendMsg();
+
+    for (int num = 0;num < 1000;num++) {
+        clt.SendMessage("Hello,there    " + std::to_string(num));
+        sleep(1);
+    }
 }

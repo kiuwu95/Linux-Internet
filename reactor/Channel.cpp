@@ -12,6 +12,7 @@ void Channel::RemoveChannel() {
 
 int Channel::fd() const { return fd_; }
 uint32_t Channel::events() const { return event; }
+EventLoop* Channel::loop() const { return loop_; }
 
 void Channel::UpdateRevent(const uint32_t& UR) { event = UR; }
 void Channel::EnableReading() {

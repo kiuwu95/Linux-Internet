@@ -4,6 +4,9 @@
 #include<string.h>
 #include<stdio.h>
 #include<string> 
+#include<iostream>
+
+#include"Connection.h"
 
 class Client {
 public:
@@ -13,8 +16,12 @@ public:
     Client();
     ~Client();
 
-    bool ConnectServer(const char IP[], const uint16_t& port);
-    void SendMsg();
+    bool ConnectServer(const uint16_t& port = 9999, const char IP[] = "127.0.0.1");
+
+    void SendMessage(const std::string& Msg);
+    std::string RecvMessage();
 private:
-    int cfd;
+    int cfd_;
+    char buff[4096];
+    std::string rmsg;
 };

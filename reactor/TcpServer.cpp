@@ -2,10 +2,11 @@
 #include"EventLoop.h"
 #include"Channel.h"
 #include"Acceptor.h"
+#include"Connection.h"
 
-TcpServer::TcpServer(const uint16_t& port, const size_t& loops_num) :
+TcpServer::TcpServer(const size_t& loops_num, const uint16_t& port, const char IP[]) :
     main_loop(std::make_unique<EventLoop>()),
-    acceptor_(std::make_unique<Acceptor>(main_loop.get(), port)),
+    acceptor_(std::make_unique<Acceptor>(main_loop.get(), port, IP)),
     loops_index(0) {
     acceptor_->SetConnectionCallBack([this](int fd) {AcceptorConnectionCallBack(fd);});
 
@@ -34,35 +35,13 @@ void TcpServer::start() {
 void TcpServer::AcceptorConnectionCallBack(int fd) {
     EventLoop* loop = sub_loops[loops_index++ % sub_loops.size()].get();
 
-    loop->RunInLoop([loop, fd] {
+    loop->RunInLoop([fd, loop] {
         std::unique_ptr<Channel> newChannel = std::make_unique<Channel>(fd, loop);
         Channel* temp = newChannel.get();
-        newChannel->SetReadCallBack([fd, loop, temp] {
-            char buff[4096];
-            while (1) {
-                bzero(&buff, sizeof(buff));
-
-                int len = recv(fd, buff, sizeof(buff), 0);
-
-                if (len > 0) {
-                    std::cout << "Client says: " << buff << std::endl << "    " << "fd: " << fd << std::endl;
-                }
-                else if (len == 0) {
-                    std::cout << "Client has disconnected..." << std::endl;
-                    loop->RemoveChannel(temp);
-                    break;
-                }
-                else {
-                    if (errno == EAGAIN || errno == EWOULDBLOCK) {
-                        break;
-                    }
-                    if (errno == EINTR) {
-                        continue;
-                    }
-                    perror("recv");
-                    break;
-                }
-            }
+        newChannel->SetReadCallBack([temp, fd] {
+            std::string msg = temp->loop()->Connections_[fd]->RecvMsg();
+            if (msg != "")
+                std::cout << msg << "    " << "fd: " << fd << std::endl;
             });
 
         loop->AddChannel(std::move(newChannel));
