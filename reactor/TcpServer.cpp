@@ -3,6 +3,7 @@
 #include"Channel.h"
 #include"Acceptor.h"
 #include"Connection.h"
+#include"GetTime.h"
 
 TcpServer::TcpServer(const size_t& loops_num, const uint16_t& port, const char IP[]) :
     main_loop(std::make_unique<EventLoop>()),
@@ -40,8 +41,9 @@ void TcpServer::AcceptorConnectionCallBack(int fd) {
         Channel* temp = newChannel.get();
         newChannel->SetReadCallBack([temp, fd] {
             std::string msg = temp->loop()->Connections_[fd]->RecvMsg();
-            if (msg != "")
-                std::cout << msg << "    " << "fd: " << fd << std::endl;
+            if (msg != "") {
+                std::cout << GetTime::GetCurrentTime() << "Client " << fd << ": " << msg << std::endl;
+            }
             });
 
         loop->AddChannel(std::move(newChannel));

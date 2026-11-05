@@ -1,5 +1,6 @@
 ﻿#include"Connection.h"
 #include"Channel.h"
+#include"GetTime.h"
 
 Connection::Connection(Channel* ch) :ch_(ch) {}
 
@@ -21,6 +22,7 @@ std::string Connection::RecvMsg() {
         }
         else {
             if (len == 0) {
+                std::cout << GetTime::GetCurrentTime();
                 std::cout << "Client " << ch_->fd() << " has disconnected..." << std::endl;
                 ch_->RemoveChannel();
                 break;
@@ -40,12 +42,12 @@ std::string Connection::RecvMsg() {
     return "";
 }
 
-void Connection::SendMsg(const std::string& Msg) {
+void Connection::SendMsg(std::string_view Msg) {
     char Msg_c_str[4 + Msg.size()];
     uint32_t MSGSIZE = htonl(Msg.size());
 
     memcpy(Msg_c_str, &MSGSIZE, 4);
-    memcpy(Msg_c_str + 4, Msg.c_str(), Msg.size());
+    memcpy(Msg_c_str + 4, Msg.data(), Msg.size());
 
     if (send(ch_->fd(), Msg_c_str, Msg.size() + 4, 0) == -1) {
         perror("send");

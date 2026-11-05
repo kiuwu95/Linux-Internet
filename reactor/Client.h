@@ -5,6 +5,7 @@
 #include<stdio.h>
 #include<string> 
 #include<iostream>
+#include<string_view>
 
 #include"Connection.h"
 
@@ -18,7 +19,8 @@ public:
 
     bool ConnectServer(const uint16_t& port = 9999, const char IP[] = "127.0.0.1");
 
-    void SendMessage(const std::string& Msg);
+    void GetMessage();
+    void SendMessage(std::string_view Msg);
     std::string RecvMessage();
 private:
     int cfd_;

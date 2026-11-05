@@ -1,4 +1,5 @@
 ﻿#include"Client.h"
+#include"GetTime.h"
 
 Client::Client() :cfd_(socket(AF_INET, SOCK_STREAM, 0)) {
     if (cfd_ == -1) {
@@ -23,16 +24,26 @@ bool Client::ConnectServer(const uint16_t& port, const char IP[]) {
         return 0;
     }
 
-    std::cout << "We have connected to the server successfully!" << std::endl;
+    std::cout << GetTime::GetCurrentTime();
+    std::cout << "Connected to the server successfully!" << std::endl;
+
     return 1;
 }
 
-void Client::SendMessage(const std::string& Msg) {
+void Client::GetMessage() {
+    std::unique_ptr<std::string>msg = std::make_unique<std::string>();
+    while ((1)) {
+        std::getline(std::cin, *msg);
+        this->SendMessage(*msg);
+    }
+}
+
+void Client::SendMessage(std::string_view Msg) {
     char Msg_c_str[4 + Msg.size()];
     uint32_t MSGSIZE = htonl(Msg.size());
 
     memcpy(Msg_c_str, &MSGSIZE, 4);
-    memcpy(Msg_c_str + 4, Msg.c_str(), Msg.size());
+    memcpy(Msg_c_str + 4, Msg.data(), Msg.size());
 
     if (send(cfd_, Msg_c_str, Msg.size() + 4, 0) == -1) {
         perror("send");
@@ -57,7 +68,8 @@ std::string Client::RecvMessage() {
         }
         else {
             if (len == 0) {
-                std::cout << "Disconnected..." << std::endl;
+                std::cout << GetTime::GetCurrentTime();
+                std::cout << "Server has disconnected..." << std::endl;
                 break;
             }
             else {
