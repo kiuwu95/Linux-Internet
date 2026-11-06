@@ -13,14 +13,15 @@ std::string Connection::RecvMsg() {
         ssize_t len = recv(channel_->fd(), &MSGSIZE, sizeof(uint32_t), 0);
         if (len == sizeof(uint32_t)) {
             MSGSIZE = ntohl(MSGSIZE);
-            len = recv(channel_->fd(), buff, MSGSIZE, 0);
+            read_buff = std::make_unique<char[]>(4096);
+            len = recv(channel_->fd(), read_buff.get(), MSGSIZE, 0);
 
             if (len < MSGSIZE) {
                 break;
             }
 
             rmsg.clear();
-            rmsg.append(buff, MSGSIZE);
+            rmsg.append(read_buff.get(), MSGSIZE);
             return rmsg;
         }
         else {

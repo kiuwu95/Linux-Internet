@@ -24,7 +24,7 @@ public:
 
     void DeleteConnection();
 private:
-    char buff[4096];
+    std::unique_ptr<char[]>read_buff;
     std::string rmsg;
 public:
     std::unique_ptr<Channel> channel_;

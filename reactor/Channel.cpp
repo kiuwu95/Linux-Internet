@@ -2,8 +2,7 @@
 #include"EventLoop.h"
 
 Channel::Channel(const int& fd, EventLoop* loop) :
-    fd_(fd),
-    loop_(loop) {
+    fd_(fd), loop_(loop) {
     bzero(&event, sizeof(event));
 };
 Channel::~Channel() {

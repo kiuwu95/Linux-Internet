@@ -8,6 +8,7 @@ Client::Client() :cfd_(socket(AF_INET, SOCK_STREAM, 0)) {
 }
 Client::~Client() {
     end = true;
+    ListenThread.join();
 
     if (cfd_ > 0) {
         close(cfd_);

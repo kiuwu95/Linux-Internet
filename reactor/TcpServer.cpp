@@ -17,6 +17,10 @@ TcpServer::TcpServer(const size_t& loops_num, const uint16_t& port, const char I
     }
 }
 TcpServer::~TcpServer() {
+    for (auto& it : sub_loops) {
+        it->~EventLoop();
+    }
+
     for (auto& it : threads_) {
         it.join();
     }
@@ -41,9 +45,9 @@ void TcpServer::AcceptorConnectionCallBack(int fd) {
         Connection* ptr = conn.get();
 
         conn->channel_->SetReadCallBack([fd, ptr] {
-            std::unique_ptr<std::string> msg = std::make_unique<std::string>(ptr->RecvMsg());
-            if (*msg != "") {
-                std::cout << GetTime::GetCurrentTime() << "Client " << fd << ": " << *msg << std::endl;
+            std::string msg = ptr->RecvMsg();
+            if (msg != "") {
+                std::cout << GetTime::GetCurrentTime() << "Client " << fd << ": " << msg << std::endl;
             }
             });
 

@@ -7,7 +7,10 @@ EventLoop::EventLoop() :epfd_(epoll_create1(0)), end_(false) {
         perror("epoll_create1");
     }
 }
-EventLoop::~EventLoop() { end_ = true; }
+
+EventLoop::~EventLoop() {
+    end_ = true;
+}
 
 void EventLoop::AddChannel(Channel* Ch) {
     epoll_event ev;
@@ -38,3 +41,5 @@ void EventLoop::loop() {
         }
     }
 }
+
+int EventLoop::epfd() const { return epfd_; }

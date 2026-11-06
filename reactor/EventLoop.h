@@ -25,7 +25,8 @@ public:
 
     void loop();
 
-    int epfd() const { return epfd_; }
+    // void end();
+    int epfd() const;
 private:
     int epfd_;
     std::atomic<bool> end_;
