@@ -1,7 +1,6 @@
 ﻿#pragma once
 #include<sys/epoll.h>
 #include<arpa/inet.h>
-#include<unistd.h>
 #include<stdio.h>
 #include<memory>
 #include<atomic>
@@ -19,16 +18,16 @@ public:
     EventLoop();
     ~EventLoop();
 
-    void UpdateChannel(Channel* Ch);
-    void AddChannel(std::unique_ptr<Channel> Ch_ptr);
-    void RemoveChannel(Channel* Ch);
+    void AddChannel(Channel* Ch);
+    void AddConnection(std::unique_ptr<Connection> Conn);
+    void DeleteConnection(int fd);
     void RunInLoop(std::function<void()>f);
 
     void loop();
+
+    int epfd() const { return epfd_; }
 private:
     int epfd_;
     std::atomic<bool> end_;
-    std::unordered_map<int, std::unique_ptr<Channel>> Channels_;
-public:
     std::unordered_map<int, std::unique_ptr<Connection>> Connections_;
 };

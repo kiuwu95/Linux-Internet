@@ -9,7 +9,7 @@ EventLoop::EventLoop() :epfd_(epoll_create1(0)), end_(false) {
 }
 EventLoop::~EventLoop() { end_ = true; }
 
-void EventLoop::UpdateChannel(Channel* Ch) {
+void EventLoop::AddChannel(Channel* Ch) {
     epoll_event ev;
     ev.data.ptr = Ch;
     ev.events = Ch->events();
@@ -17,20 +17,15 @@ void EventLoop::UpdateChannel(Channel* Ch) {
         perror("epoll_ctl");
     }
 }
-void EventLoop::AddChannel(std::unique_ptr<Channel> Ch_ptr) {
-    std::unique_ptr<Connection> conn_ = std::make_unique<Connection>(Ch_ptr.get());
-    Connections_.emplace(Ch_ptr->fd(), std::move(conn_));
-    Channels_.emplace(Ch_ptr->fd(), std::move(Ch_ptr));
-}
-void EventLoop::RemoveChannel(Channel* Ch) {
-    if (epoll_ctl(epfd_, EPOLL_CTL_DEL, Ch->fd(), nullptr) == -1) {
-        perror("epoll_ctl");
-    }
-    close(Ch->fd());
 
-    Connections_.erase(Ch->fd());
-    Channels_.erase(Ch->fd());
+void EventLoop::AddConnection(std::unique_ptr<Connection> conn) {
+    Connections_.emplace(conn->channel_->fd(), std::move(conn));
 }
+
+void EventLoop::DeleteConnection(int fd) {
+    Connections_.erase(fd);
+}
+
 void EventLoop::RunInLoop(std::function<void()>f) { f(); }
 
 void EventLoop::loop() {

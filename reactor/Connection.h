@@ -8,6 +8,7 @@
 #include<string_view>
 
 class Channel;
+class EventLoop;
 
 class Connection {
 public:
@@ -15,13 +16,16 @@ public:
     Connection(const Connection&) = delete;
 
     Connection() = default;
-    Connection(Channel* ch);
+    Connection(const int& fd, EventLoop* loop);
     ~Connection() = default;
 
     std::string RecvMsg();
-    void SendMsg(std::string_view Msg);
+    void SendMsg(std::string_view Msg) const;
+
+    void DeleteConnection();
 private:
-    Channel* ch_;//直接对Channel负责
-    char buff[4096];//用户态缓冲区
+    char buff[4096];
     std::string rmsg;
+public:
+    std::unique_ptr<Channel> channel_;
 };

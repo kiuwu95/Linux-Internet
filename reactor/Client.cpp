@@ -7,6 +7,8 @@ Client::Client() :cfd_(socket(AF_INET, SOCK_STREAM, 0)) {
     }
 }
 Client::~Client() {
+    end = true;
+
     if (cfd_ > 0) {
         close(cfd_);
     }
@@ -24,21 +26,34 @@ bool Client::ConnectServer(const uint16_t& port, const char IP[]) {
         return 0;
     }
 
+    end = false;
+    this->StartListen();
+
     std::cout << GetTime::GetCurrentTime();
     std::cout << "Connected to the server successfully!" << std::endl;
 
     return 1;
 }
 
+void Client::StartListen() {
+    ListenThread = std::thread([this] {
+        while (!end) {
+            if (this->RecvMessage() != "") {
+                std::cout << GetTime::GetCurrentTime() << rmsg << std::endl;
+            }
+        }
+        });
+}
+
 void Client::GetMessage() {
     std::unique_ptr<std::string>msg = std::make_unique<std::string>();
-    while ((1)) {
+    while (1) {
         std::getline(std::cin, *msg);
         this->SendMessage(*msg);
     }
 }
 
-void Client::SendMessage(std::string_view Msg) {
+void Client::SendMessage(std::string_view Msg) const {
     char Msg_c_str[4 + Msg.size()];
     uint32_t MSGSIZE = htonl(Msg.size());
 
@@ -68,6 +83,7 @@ std::string Client::RecvMessage() {
         }
         else {
             if (len == 0) {
+                end = true;
                 std::cout << GetTime::GetCurrentTime();
                 std::cout << "Server has disconnected..." << std::endl;
                 break;

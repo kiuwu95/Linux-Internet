@@ -6,24 +6,27 @@ Channel::Channel(const int& fd, EventLoop* loop) :
     loop_(loop) {
     bzero(&event, sizeof(event));
 };
-void Channel::RemoveChannel() {
-    loop_->RemoveChannel(this);
+Channel::~Channel() {
+    if (epoll_ctl(loop_->epfd(), EPOLL_CTL_DEL, fd_, nullptr) == -1) {
+        perror("epoll_ctl");
+    }
+    close(fd_);
 }
 
 int Channel::fd() const { return fd_; }
 uint32_t Channel::events() const { return event; }
 EventLoop* Channel::loop() const { return loop_; }
 
-void Channel::UpdateRevent(const uint32_t& UR) { event = UR; }
+void Channel::UpdateEvent(const uint32_t& NewEvent) { event = NewEvent; }
 void Channel::EnableReading() {
     event |= EPOLLIN;
-    loop_->UpdateChannel(this);
+    loop_->AddChannel(this);
 }
 void Channel::HandleEvent() {
     if (event & EPOLLIN) {
         readcall_back();
     }
-    else if (event & EPOLLOUT) {
+    if (event & EPOLLOUT) {
         writecall_back();
     }
 }

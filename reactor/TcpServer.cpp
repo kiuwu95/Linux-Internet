@@ -23,30 +23,31 @@ TcpServer::~TcpServer() {
 }
 
 void TcpServer::start() {
+    for (auto& it : sub_loops) {
+        threads_.emplace_back([ptr = it.get()] {
+            ptr->loop();
+            });
+    }
     threads_.emplace_back([this] {
         main_loop->loop();
         });
-    for (auto& it : sub_loops) {
-        threads_.emplace_back([&it] {
-            it->loop();
-            });
-    }
 }
 
 void TcpServer::AcceptorConnectionCallBack(int fd) {
     EventLoop* loop = sub_loops[loops_index++ % sub_loops.size()].get();
 
-    loop->RunInLoop([fd, loop] {
-        std::unique_ptr<Channel> newChannel = std::make_unique<Channel>(fd, loop);
-        Channel* temp = newChannel.get();
-        newChannel->SetReadCallBack([temp, fd] {
-            std::string msg = temp->loop()->Connections_[fd]->RecvMsg();
-            if (msg != "") {
-                std::cout << GetTime::GetCurrentTime() << "Client " << fd << ": " << msg << std::endl;
+    loop->RunInLoop([fd, loop, this] {
+        std::unique_ptr<Connection> conn = std::make_unique<Connection>(fd, loop);
+        Connection* ptr = conn.get();
+
+        conn->channel_->SetReadCallBack([fd, ptr] {
+            std::unique_ptr<std::string> msg = std::make_unique<std::string>(ptr->RecvMsg());
+            if (*msg != "") {
+                std::cout << GetTime::GetCurrentTime() << "Client " << fd << ": " << *msg << std::endl;
             }
             });
 
-        loop->AddChannel(std::move(newChannel));
-        temp->EnableReading();
+        loop->AddConnection(std::move(conn));
+        ptr->channel_->EnableReading();
         });
 }

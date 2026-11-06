@@ -2,6 +2,7 @@
 #include<cstdint>
 #include<functional>
 #include<sys/epoll.h>
+#include<unistd.h>
 #include<string.h>
 
 class EventLoop;
@@ -9,14 +10,13 @@ class EventLoop;
 class Channel {
 public:
     Channel(const int& fd, EventLoop* loop);
-    ~Channel() = default;
+    ~Channel();
 
     int fd() const;
     uint32_t events() const;
     EventLoop* loop() const;
 
-    void UpdateRevent(const uint32_t& UR);
-    void RemoveChannel();
+    void UpdateEvent(const uint32_t& UR);
     void EnableReading();
     void HandleEvent();
 
