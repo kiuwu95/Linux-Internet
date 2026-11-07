@@ -8,6 +8,9 @@
 #include<string_view>
 #include<thread>
 #include<atomic>
+#include<memory>
+
+class Buffer;
 
 class Client {
 public:
@@ -25,8 +28,9 @@ public:
     std::string RecvMessage();
 private:
     int cfd_;
-    char buff[4096];
     std::atomic<bool> end;
-    std::string rmsg;
     std::thread ListenThread;
+
+    std::unique_ptr<Buffer> read_buff_;
+    std::unique_ptr<Buffer> write_buff_;
 };

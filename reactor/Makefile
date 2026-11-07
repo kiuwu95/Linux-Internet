@@ -1,7 +1,7 @@
-SERVER_SRC=Acceptor.cpp TcpServer.cpp Channel.cpp EventLoop.cpp Svr.cpp Connection.cpp
+SERVER_SRC=Acceptor.cpp TcpServer.cpp Channel.cpp EventLoop.cpp Svr.cpp Connection.cpp Buffer.cpp
 TARGET1=Server
 
-CLIENT_SRC=Client.cpp Clt.cpp
+CLIENT_SRC=Client.cpp Clt.cpp Buffer.cpp
 TARGET2=Client
 
 HEAD=GetTime.h 
@@ -9,10 +9,10 @@ HEAD=GetTime.h
 all:$(TARGET1) $(TARGET2)
 
 $(TARGET1): $(SERVER_SRC) $(HEAD) 
-	g++ -Wall -pthread $(SERVER_SRC) -o $(TARGET1)
+	g++ -Wall -pthread -std=c++17 $(SERVER_SRC) -O2 -o $(TARGET1)
 
 $(TARGET2): $(CLIENT_SRC) $(HEAD)
-	g++ -Wall $(CLIENT_SRC) -o $(TARGET2)
+	g++ -Wall -std=c++17 $(CLIENT_SRC) -O2 -o $(TARGET2)
 	
 clean:
 	rm -f $(TARGET1) $(TARGET2)
