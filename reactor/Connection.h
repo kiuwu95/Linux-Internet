@@ -20,15 +20,14 @@ public:
     Connection(const int& fd, EventLoop* loop);
     ~Connection() = default;
 
-    // std::string RecvMsg();
-    void SendMsg(std::string_view Msg) const;
     const std::string RecvMsg();
+    void SendMsg(std::string_view Msg) const;
+
     void DeleteConnection();
+
+    Channel* channel() const;
 private:
     std::unique_ptr<Buffer>read_buff_;
     std::unique_ptr<Buffer>write_buff_;
-
-    // std::string rmsg;
-public:
     std::unique_ptr<Channel> channel_;
 };

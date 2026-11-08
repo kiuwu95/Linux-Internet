@@ -11,7 +11,7 @@ public:
     TcpServer(const TcpServer&) = delete;
     TcpServer& operator=(const TcpServer&) = delete;
 
-    TcpServer(const size_t& loops_num, const uint16_t& port = 9999, const char IP[] = "127.0.0.1");
+    TcpServer(const char IP[] = "127.0.0.1", const uint16_t& port = 9999, const size_t& loops_num = 4);
     ~TcpServer();
 
     void start();

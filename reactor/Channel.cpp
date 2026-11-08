@@ -12,8 +12,8 @@ Channel::~Channel() {
     close(fd_);
 }
 
-int Channel::fd() const { return fd_; }
-uint32_t Channel::events() const { return event; }
+const int Channel::fd() const { return fd_; }
+const uint32_t Channel::events() const { return event; }
 EventLoop* Channel::loop() const { return loop_; }
 
 void Channel::UpdateEvent(const uint32_t& NewEvent) { event = NewEvent; }

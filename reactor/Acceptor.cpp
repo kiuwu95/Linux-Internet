@@ -1,8 +1,7 @@
 ﻿#include"Acceptor.h"
 #include"EventLoop.h"
 #include"Channel.h"
-
-#include<iostream>
+#include"GetTime.h"
 
 Acceptor::Acceptor(EventLoop* loop, const uint16_t& port, const char IP[]) :main_loop(loop) {
     int lfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -47,8 +46,9 @@ void Acceptor::AcceptClient() {
         }
 
         char IP[32];
-        std::cout << "A new client has connected!" << std::endl
-            << "IP: " << inet_ntop(AF_INET, &caddr.sin_addr.s_addr, IP, sizeof(IP))
+        std::cout << GetTime::GetCurrentTime();
+        std::cout << "A new client has connected!"
+            << "    IP: " << inet_ntop(AF_INET, &caddr.sin_addr.s_addr, IP, sizeof(IP))
             << " Port: " << caddr.sin_port << std::endl;
 
         conn_cb(cfd);

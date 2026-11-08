@@ -22,7 +22,7 @@ void EventLoop::AddChannel(Channel* Ch) {
 }
 
 void EventLoop::AddConnection(std::unique_ptr<Connection> conn) {
-    Connections_.emplace(conn->channel_->fd(), std::move(conn));
+    Connections_.emplace(conn->channel()->fd(), std::move(conn));
 }
 
 void EventLoop::DeleteConnection(int fd) {
@@ -42,4 +42,4 @@ void EventLoop::loop() {
     }
 }
 
-int EventLoop::epfd() const { return epfd_; }
+const int EventLoop::epfd() const { return epfd_; }

@@ -20,7 +20,7 @@ public:
     Client();
     ~Client();
 
-    bool ConnectServer(const uint16_t& port = 9999, const char IP[] = "127.0.0.1");
+    bool ConnectServer(const char IP[] = "127.0.0.1", const uint16_t& port = 9999);
     void StartListen();
 
     void GetMessage();
@@ -28,7 +28,7 @@ public:
     std::string RecvMessage();
 private:
     int cfd_;
-    std::atomic<bool> end;
+    std::atomic<bool> end_;
     std::thread ListenThread;
 
     std::unique_ptr<Buffer> read_buff_;

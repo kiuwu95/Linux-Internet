@@ -10,7 +10,7 @@ write_buff_(std::make_unique<Buffer>()) {
     }
 }
 Client::~Client() {
-    end = true;
+    end_ = true;
     ListenThread.join();
 
     if (cfd_ > 0) {
@@ -18,7 +18,7 @@ Client::~Client() {
     }
 }
 
-bool Client::ConnectServer(const uint16_t& port, const char IP[]) {
+bool Client::ConnectServer(const char IP[], const uint16_t& port) {
     sockaddr_in saddr;
     bzero(&saddr, sizeof(saddr));
     saddr.sin_family = AF_INET;
@@ -30,7 +30,7 @@ bool Client::ConnectServer(const uint16_t& port, const char IP[]) {
         return 0;
     }
 
-    end = false;
+    end_ = false;
     this->StartListen();
 
     std::cout << GetTime::GetCurrentTime();
@@ -41,7 +41,7 @@ bool Client::ConnectServer(const uint16_t& port, const char IP[]) {
 
 void Client::StartListen() {
     ListenThread = std::thread([this] {
-        while (!end) {
+        while (!end_) {
             if (this->RecvMessage() != "") {
                 std::cout << GetTime::GetCurrentTime() << read_buff_->rbuf() << std::endl;
             }
@@ -86,6 +86,7 @@ std::string Client::RecvMessage() {
                 if (len == 0) {
                     std::cout << GetTime::GetCurrentTime();
                     std::cout << "Server has disconnected..." << std::endl;
+                    end_ = true;
                     break;
                 }
                 else {

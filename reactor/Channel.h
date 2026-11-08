@@ -12,8 +12,8 @@ public:
     Channel(const int& fd, EventLoop* loop);
     ~Channel();
 
-    int fd() const;
-    uint32_t events() const;
+    const int fd() const;
+    const uint32_t events() const;
     EventLoop* loop() const;
 
     void UpdateEvent(const uint32_t& UR);

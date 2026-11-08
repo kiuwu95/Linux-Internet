@@ -2,7 +2,7 @@
 #include<string>
 #include<iostream>
 
-static TcpServer Reactor(15);
+static TcpServer Reactor;
 
 int main() {
     Reactor.start();

@@ -5,7 +5,7 @@
 #include"Connection.h"
 #include"GetTime.h"
 
-TcpServer::TcpServer(const size_t& loops_num, const uint16_t& port, const char IP[]) :
+TcpServer::TcpServer(const char IP[], const uint16_t& port, const size_t& loops_num) :
     main_loop(std::make_unique<EventLoop>()),
     acceptor_(std::make_unique<Acceptor>(main_loop.get(), port, IP)),
     loops_index(0) {
@@ -44,7 +44,7 @@ void TcpServer::AcceptorConnectionCallBack(int fd) {
         std::unique_ptr<Connection> conn = std::make_unique<Connection>(fd, loop);
         Connection* ptr = conn.get();
 
-        conn->channel_->SetReadCallBack([fd, ptr] {
+        conn->channel()->SetReadCallBack([fd, ptr] {
             std::string msg = ptr->RecvMsg();
             if (msg != "") {
                 std::cout << GetTime::GetCurrentTime() << "Client " << fd << ": " << msg << std::endl;
@@ -52,6 +52,6 @@ void TcpServer::AcceptorConnectionCallBack(int fd) {
             });
 
         loop->AddConnection(std::move(conn));
-        ptr->channel_->EnableReading();
+        ptr->channel()->EnableReading();
         });
 }

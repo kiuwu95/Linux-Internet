@@ -3,10 +3,6 @@
 #include<cstdint>
 
 class Buffer {
-private:
-    std::string buffer_;
-    uint32_t readn_ = 0;
-    uint32_t msgsize_ = 0;
 public:
     Buffer() = default;
     ~Buffer() = default;
@@ -20,4 +16,8 @@ public:
 
     void SetMsgsize(const uint32_t& size);
     void Clear();
+private:
+    std::string buffer_;
+    uint32_t readn_ = 0;
+    uint32_t msgsize_ = 0;
 };

@@ -77,3 +77,7 @@ void Connection::SendMsg(std::string_view Msg) const {
 void Connection::DeleteConnection() {
     channel_->loop()->DeleteConnection(channel_->fd());
 }
+
+Channel* Connection::channel() const {
+    return channel_.get();
+}
