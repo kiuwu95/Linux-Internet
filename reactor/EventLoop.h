@@ -25,9 +25,10 @@ public:
 
     void loop();
 
-    const int epfd() const;
+    int epfd() const;
 private:
     int epfd_;
     std::atomic<bool> end_;
     std::unordered_map<int, std::unique_ptr<Connection>> Connections_;
+    std::vector<int> connectionsBin;
 };

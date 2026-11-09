@@ -8,71 +8,64 @@ Connection::Connection(const int& fd, EventLoop* loop) :
     write_buff_(std::make_unique<Buffer>()),
     channel_(std::make_unique<Channel>(fd, loop)) {
 }
+
 const std::string Connection::RecvMsg() {
-    int len = 0;
-    char buf[1024];
     while (1) {
-        if (read_buff_->left() == 0) {
-            read_buff_->Clear();
-
+        while (read_buff_->readableBytes() >= 4) {
             uint32_t MSGSIZE;
-            len = recv(channel_->fd(), &MSGSIZE, 4, 0);
-            if (len == 4) {
-                MSGSIZE = ntohl(MSGSIZE);
-                read_buff_->SetMsgsize(MSGSIZE);
-            }
-            else {
-                if (len == 0) {
-                    std::cout << GetTime::GetCurrentTime();
-                    std::cout << "Client " << channel_->fd() << " has disconnected..." << std::endl;
-                    this->DeleteConnection();
-                    break;
-                }
-                else {
-                    if (len < 4) {
-                        break;
-                    }
-                    if (errno == EINTR) {
-                        continue;
-                    }
-                    perror("recv");
-                    break;
-                }
-            }
-        }
+            memcpy(&MSGSIZE, read_buff_->peek(), 4);
+            MSGSIZE = ntohl(MSGSIZE);
 
-        len = recv(channel_->fd(), buf, read_buff_->left(), 0);
-        if (len == -1) {
-            if (errno == EAGAIN || errno == EWOULDBLOCK) {
+            if (MSGSIZE == 0) {
+                read_buff_->hread(4);
+                return "";
+            }
+            if (MSGSIZE + 4 > read_buff_->readableBytes()) {
                 break;
             }
-            if (errno == EINTR) {
-                continue;
-            }
-            perror("recv");
-            break;
-        }
-        read_buff_->Append(buf, len);
 
-        if (read_buff_->left() == 0) {
-            return read_buff_->rbuf();
+            read_buff_->hread(4);
+
+            rmsg.assign(read_buff_->peek(), MSGSIZE);
+            read_buff_->hread(MSGSIZE);
+
+            return rmsg;
         }
+
+        size_t n = read_buff_->readn(channel_->fd());
+        if (n > 0) {
+            continue;
+        }
+
+        if (n == 0) {
+            std::cout << "Client " << channel_->fd() << " has disconnected..." << std::endl;
+            this->DeleteConnection();
+            return "";
+        }
+
+        if (errno == EAGAIN || errno == EWOULDBLOCK) {
+            return "";
+        }
+        if (errno == EINTR) {
+            continue;
+        }
+        perror("recv");
+        return "";
     }
-
-    return "";
 }
 
-void Connection::SendMsg(std::string_view Msg) const {
-    uint32_t MSGSIZE = htonl(Msg.size());
+void Connection::SendMsg(std::string_view Msg) {
+    uint32_t MSGSIZE = Msg.size();
+    MSGSIZE = htonl(MSGSIZE);
     write_buff_->Append((char*)&MSGSIZE, 4);
     write_buff_->Append(Msg.data(), Msg.size());
 
-    if (send(channel_->fd(), write_buff_->rc_buf(), Msg.size() + 4, 0) == -1) {
-        perror("send");
+    if (write_buff_->writen(channel_->fd()) == -1) {
+        perror("writen");
     }
-
-    write_buff_->Clear();
 }
+
+
 
 void Connection::DeleteConnection() {
     channel_->loop()->DeleteConnection(channel_->fd());

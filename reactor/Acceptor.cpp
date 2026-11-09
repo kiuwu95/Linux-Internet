@@ -3,12 +3,16 @@
 #include"Channel.h"
 #include"GetTime.h"
 
+#include<fcntl.h>
+
 Acceptor::Acceptor(EventLoop* loop, const uint16_t& port, const char IP[]) :main_loop(loop) {
     int lfd = socket(AF_INET, SOCK_STREAM, 0);
     if (lfd == -1) {
         perror("socket");
         return;
     }
+    fcntl(lfd, F_SETFL, fcntl(lfd, F_GETFL, 0) | O_NONBLOCK);
+
     sockaddr_in saddr;
     saddr.sin_port = htons(port);
     saddr.sin_family = AF_INET;

@@ -1,23 +1,27 @@
 ﻿#pragma once
-#include<string>
-#include<cstdint>
+
+#include<string.h>
+#include<vector>
+#include<stdio.h>
+#include<arpa/inet.h>
 
 class Buffer {
 public:
-    Buffer() = default;
-    ~Buffer() = default;
+    Buffer(const size_t& init = 4096) :buf_(init) {}
 
-    const std::string rbuf() const;
-    const char* rc_buf() const;
-    const size_t buf_size() const;
-    const uint32_t left() const;
+    size_t readableBytes() const { return writer_ - reader_; }
+    size_t writableBytes() const { return buf_.size() - writer_; }
+    const char* peek() const { return buf_.data() + reader_; }
 
-    void Append(const char* msg, const size_t& len);
+    void hread(const size_t& len);
+    void Writable(const size_t& len);
+    void Append(const char* p, const size_t& len);
+    void Make(const size_t& len);
 
-    void SetMsgsize(const uint32_t& size);
-    void Clear();
+    ssize_t readn(int fd);
+    ssize_t writen(int fd);
 private:
-    std::string buffer_;
-    uint32_t readn_ = 0;
-    uint32_t msgsize_ = 0;
+    std::vector<char> buf_;
+    size_t reader_ = 0;
+    size_t writer_ = 0;
 };

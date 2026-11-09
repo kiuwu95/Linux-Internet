@@ -26,7 +26,7 @@ void EventLoop::AddConnection(std::unique_ptr<Connection> conn) {
 }
 
 void EventLoop::DeleteConnection(int fd) {
-    Connections_.erase(fd);
+    connectionsBin.emplace_back(fd);
 }
 
 void EventLoop::RunInLoop(std::function<void()>f) { f(); }
@@ -39,7 +39,13 @@ void EventLoop::loop() {
             Channel* ch = static_cast<Channel*>(events_[i].data.ptr);
             ch->HandleEvent();
         }
+
+        for (auto& it : connectionsBin) {
+            Connections_.erase(it);
+        }
+        connectionsBin.clear();
+
     }
 }
 
-const int EventLoop::epfd() const { return epfd_; }
+int EventLoop::epfd() const { return epfd_; }

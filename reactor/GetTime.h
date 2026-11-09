@@ -11,7 +11,7 @@ public:
     GetTime() = delete;
     ~GetTime() = delete;
 
-    static std::string GetCurrentTime() {
+    static const std::string GetCurrentTime() {
         auto current_time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
         tm cur_time;
         localtime_r(&current_time, &cur_time);

@@ -10,8 +10,8 @@ write_buff_(std::make_unique<Buffer>()) {
     }
 }
 Client::~Client() {
-    end_ = true;
-    ListenThread.join();
+    end_ = stopListen_ = true;
+    ListenThread_.join();
 
     if (cfd_ > 0) {
         close(cfd_);
@@ -30,7 +30,7 @@ bool Client::ConnectServer(const char IP[], const uint16_t& port) {
         return 0;
     }
 
-    end_ = false;
+    stopListen_ = false;
     this->StartListen();
 
     std::cout << GetTime::GetCurrentTime();
@@ -40,10 +40,13 @@ bool Client::ConnectServer(const char IP[], const uint16_t& port) {
 }
 
 void Client::StartListen() {
-    ListenThread = std::thread([this] {
+    ListenThread_ = std::thread([this] {
+        std::string recv_msg;
         while (!end_) {
-            if (this->RecvMessage() != "") {
-                std::cout << GetTime::GetCurrentTime() << read_buff_->rbuf() << std::endl;
+            while (!stopListen_) {
+                if (!(recv_msg = this->RecvMsg()).size() && recv_msg != "") {
+                    std::cout << GetTime::GetCurrentTime() << recv_msg << std::endl;
+                }
             }
         }
         });
@@ -53,72 +56,62 @@ void Client::GetMessage() {
     std::string msg;
     while (1) {
         std::getline(std::cin, msg);
-        this->SendMessage(msg);
+        this->SendMsg(msg);
     }
 }
 
-void Client::SendMessage(std::string_view Msg) const {
-    uint32_t MSGSIZE = htonl(Msg.size());
+void Client::SendMsg(std::string_view Msg) {
+    uint32_t MSGSIZE = Msg.size();
+    MSGSIZE = htonl(MSGSIZE);
     write_buff_->Append((char*)&MSGSIZE, 4);
     write_buff_->Append(Msg.data(), Msg.size());
 
-    if (send(cfd_, write_buff_->rc_buf(), Msg.size() + 4, 0) == -1) {
-        perror("send");
+    if (write_buff_->writen(cfd_) == -1) {
+        perror("writen");
     }
-
-    write_buff_->Clear();
 }
 
-std::string Client::RecvMessage() {
-    int len = 0;
-    char buf[1024];
+std::string Client::RecvMsg() {
     while (1) {
-        if (read_buff_->left() == 0) {
-            read_buff_->Clear();
-
+        while (read_buff_->readableBytes() >= 4) {
             uint32_t MSGSIZE;
-            len = recv(cfd_, &MSGSIZE, 4, 0);
-            if (len == 4) {
-                MSGSIZE = ntohl(MSGSIZE);
-                read_buff_->SetMsgsize(MSGSIZE);
-            }
-            else {
-                if (len == 0) {
-                    std::cout << GetTime::GetCurrentTime();
-                    std::cout << "Server has disconnected..." << std::endl;
-                    end_ = true;
-                    break;
-                }
-                else {
-                    if (len < 4) {
-                        break;
-                    }
-                    if (errno == EINTR) {
-                        continue;
-                    }
-                    perror("recv");
-                    break;
-                }
-            }
-        }
+            memcpy(&MSGSIZE, read_buff_->peek(), 4);
+            MSGSIZE = ntohl(MSGSIZE);
 
-        len = recv(cfd_, buf, read_buff_->left(), 0);
-        if (len == -1) {
-            if (errno == EAGAIN || errno == EWOULDBLOCK) {
+            if (MSGSIZE == 0) {
+                read_buff_->hread(4);
+                return "";
+            }
+            if (MSGSIZE + 4 > read_buff_->readableBytes()) {
                 break;
             }
-            if (errno == EINTR) {
-                continue;
-            }
-            perror("recv");
-            break;
-        }
-        read_buff_->Append(buf, len);
 
-        if (read_buff_->left() == 0) {
-            return read_buff_->rbuf();
+            read_buff_->hread(4);
+
+            memcpy(rmsg.data(), read_buff_->peek(), MSGSIZE);
+            read_buff_->hread(MSGSIZE);
+
+            return rmsg;
         }
+
+        size_t n = read_buff_->readn(cfd_);
+        if (n > 0) {
+            continue;
+        }
+
+        if (n == 0) {
+            std::cout << "Server has disconnected..." << std::endl;
+            stopListen_ = true;
+            return "";
+        }
+
+        if (errno == EAGAIN || errno == EWOULDBLOCK) {
+            return "";
+        }
+        if (errno == EINTR) {
+            continue;
+        }
+        perror("recv");
+        return "";
     }
-
-    return "";
 }

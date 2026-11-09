@@ -21,7 +21,7 @@ public:
     ~Connection() = default;
 
     const std::string RecvMsg();
-    void SendMsg(std::string_view Msg) const;
+    void SendMsg(std::string_view Msg);
 
     void DeleteConnection();
 
@@ -30,4 +30,6 @@ private:
     std::unique_ptr<Buffer>read_buff_;
     std::unique_ptr<Buffer>write_buff_;
     std::unique_ptr<Channel> channel_;
+
+    std::string rmsg;
 };

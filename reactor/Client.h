@@ -24,12 +24,14 @@ public:
     void StartListen();
 
     void GetMessage();
-    void SendMessage(std::string_view Msg) const;
-    std::string RecvMessage();
+    void SendMsg(std::string_view Msg);
+    std::string RecvMsg();
 private:
     int cfd_;
-    std::atomic<bool> end_;
-    std::thread ListenThread;
+    std::atomic<bool> stopListen_ = true, end_ = false;
+    std::string rmsg;
+
+    std::thread ListenThread_;
 
     std::unique_ptr<Buffer> read_buff_;
     std::unique_ptr<Buffer> write_buff_;

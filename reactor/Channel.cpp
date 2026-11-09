@@ -1,9 +1,11 @@
 ﻿#include"Channel.h"
 #include"EventLoop.h"
-
+#include<fcntl.h>
 Channel::Channel(const int& fd, EventLoop* loop) :
     fd_(fd), loop_(loop) {
     bzero(&event, sizeof(event));
+
+    fcntl(fd, F_SETFL, fcntl(fd, F_GETFL, 0) | O_NONBLOCK);
 };
 Channel::~Channel() {
     if (epoll_ctl(loop_->epfd(), EPOLL_CTL_DEL, fd_, nullptr) == -1) {
@@ -12,8 +14,8 @@ Channel::~Channel() {
     close(fd_);
 }
 
-const int Channel::fd() const { return fd_; }
-const uint32_t Channel::events() const { return event; }
+int Channel::fd() const { return fd_; }
+uint32_t Channel::events() const { return event; }
 EventLoop* Channel::loop() const { return loop_; }
 
 void Channel::UpdateEvent(const uint32_t& NewEvent) { event = NewEvent; }
