@@ -32,7 +32,7 @@ const std::string Connection::RecvMsg() {
             return rmsg;
         }
 
-        size_t n = read_buff_->readn(channel_->fd());
+        ssize_t n = read_buff_->readn(channel_->fd());
         if (n > 0) {
             continue;
         }

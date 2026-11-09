@@ -94,7 +94,7 @@ std::string Client::RecvMsg() {
             return rmsg;
         }
 
-        size_t n = read_buff_->readn(cfd_);
+        ssize_t n = read_buff_->readn(cfd_);
         if (n > 0) {
             continue;
         }
