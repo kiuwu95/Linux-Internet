@@ -4,8 +4,9 @@
 #include<sys/epoll.h>
 #include<unistd.h>
 #include<string.h>
+#include<fcntl.h>
 
-class EventLoop;
+#include"EventLoop.h"
 
 class Channel {
 public:
@@ -16,12 +17,19 @@ public:
     uint32_t events() const;
     EventLoop* loop() const;
 
-    void UpdateEvent(const uint32_t& UR);
+    void UpdateEvent(const uint32_t& NewEvent);
     void EnableReading();
     void HandleEvent();
 
     void SetReadCallBack(std::function<void()> f);
     void SetWriteCallBack(std::function<void()> f);
+
+    static void* operator new(size_t size) {
+        return EventLoop::GetMemoryPool().allocate();
+    }
+    static void operator delete(void* p) noexcept {
+        return EventLoop::GetMemoryPool().deallocate(p);
+    }
 private:
     int fd_;
     EventLoop* loop_;

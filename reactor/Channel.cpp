@@ -1,6 +1,5 @@
 ﻿#include"Channel.h"
-#include"EventLoop.h"
-#include<fcntl.h>
+
 Channel::Channel(const int& fd, EventLoop* loop) :
     fd_(fd), loop_(loop) {
     bzero(&event, sizeof(event));

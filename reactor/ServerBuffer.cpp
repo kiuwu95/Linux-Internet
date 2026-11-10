@@ -1,4 +1,4 @@
-﻿#include"Buffer.h"
+﻿#include"ServerBuffer.h"
 
 namespace {
     constexpr size_t MAXSIZE = 64 * 1024;

@@ -7,6 +7,7 @@
 #include<functional>
 #include<unordered_map>
 
+#include"MemoryPool.h"
 class Channel;
 class Connection;
 
@@ -26,9 +27,12 @@ public:
     void loop();
 
     int epfd() const;
+    static MemoryPool& GetMemoryPool() { return mp_; }
 private:
     int epfd_;
     std::atomic<bool> end_;
     std::unordered_map<int, std::unique_ptr<Connection>> Connections_;
     std::vector<int> connectionsBin;
+
+    static MemoryPool mp_;
 };
