@@ -1,7 +1,7 @@
-﻿#include"Connection.h"
-#include"Channel.h"
-#include"GetTime.h"
-#include"EventLoop.h"
+﻿#include"include/Connection.h"
+#include"include/Channel.h"
+#include"include/GetTime.h"
+#include"include/EventLoop.h"
 
 Connection::Connection(const int& fd, EventLoop* loop) :
     read_buff_(std::make_unique<Buffer>()),
@@ -16,7 +16,7 @@ const std::string Connection::RecvMsg() {
             memcpy(&MSGSIZE, read_buff_->peek(), 4);
             MSGSIZE = ntohl(MSGSIZE);
 
-            if (MSGSIZE == 0) {
+            if (MSGSIZE == 0 || MSGSIZE > 4096) {
                 read_buff_->hread(4);
                 return "";
             }

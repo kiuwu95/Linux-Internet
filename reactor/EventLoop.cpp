@@ -1,8 +1,7 @@
-﻿#include"EventLoop.h"
-#include"Channel.h"
-#include"Connection.h"
+﻿#include"include/EventLoop.h"
+#include"include/Channel.h"
+#include"include/Connection.h"
 
-MemoryPool EventLoop::mp_{};
 EventLoop::EventLoop() :epfd_(epoll_create1(0)), end_(false) {
     if (epfd_ == -1) {
         perror("epoll_create1");
